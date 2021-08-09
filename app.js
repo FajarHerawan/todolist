@@ -3,7 +3,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const date = require(__dirname + "/date.js");
-
+const _=require("lodash")
 const app = express();
 const mongoose = require("mongoose");
 
@@ -63,18 +63,52 @@ app.get("/", function(req, res) {
 
 app.post("/", function(req, res){
   const item = req.body.newItem;
+  const listTitle = req.body.listTitle
   const item1 = new List({
     name: item
   })
   item1.save()
-  res.redirect("/")
+  if (listTitle === "Today"){
+  res.redirect("/")}else{res.redirect("/"+listTitle)}
   
 });
+app.post("/delete",function(req,res){
+ const a = req.body.checkbox
+ console.log(a)
 
-app.post("/delete",function(res,req){
-  console.log(req.body.checkbox)
+List.findByIdAndRemove(a,function(err){
+  const listTitle = req.body.listTitle
+  if(!err){console.log("succesfully")
+  if (listTitle === "Today"){
+    res.redirect("/")}else{res.redirect("/"+listTitle)}}
+  else{console.log(err)}
 })
 
+
+
+
+
+})
+app.get("/:name",function(req,res){
+  const route = _.upperFirst(req.params.name)
+  console.log(route)
+  List.find({},function(err,list){
+    if(err){console.log(err)}
+    else{ 
+      if(list.length===0){  List.insertMany(array,function(err){
+        if(err){
+          console.log(err)
+        }
+        else{
+          console.log("Succes")
+        }
+      })
+      res.redirect("/"+route)
+    }else{res.render("list", {listTitle:route,newListItems:list})}
+      
+      }
+  })
+})
 
 app.listen(3000, function() {
   console.log("Server started on port 3000");
